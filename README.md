@@ -58,3 +58,17 @@ I later found out that you can limit which fields the weather API returns. This 
 
 ---
 Let me know if you have any questions!
+
+## Potential Improvements
+
+If I had more time, here are some enhancements I'd consider:
+
+- **Response Streaming**: Implement SSE/WebSockets to stream AI responses in real-time for better UX
+- **Rate Limiting**: Add per-user/IP rate limits to prevent API abuse
+- **Weather API Caching**: Cache weather responses (10-15min TTL) to reduce API calls and improve latency
+- **Retry Logic**: Implement exponential backoff for OpenAI and Weather API calls to handle transient failures
+- **Custom Metrics**: Track business metrics like tool usage frequency and conversation length in Prometheus
+- **Conversation Search**: Add full-text search across conversation history using MongoDB Atlas Search
+- **Alerting**: Set up alerts for error rates, latency spikes, and API quota limits
+- **Test Coverage**: Add unit tests for individual tools and load tests for performance validation. Not only the server API but also all the tools and the whole flow of tool calling.
+- **E2E Tests**: Create end-to-end tests simulating real conversations with deterministic OpenAI mocks
