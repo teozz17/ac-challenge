@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"net/http"
+	"os"
 
 	"github.com/acai-travel/tech-challenge/internal/chat"
 	"github.com/acai-travel/tech-challenge/internal/chat/assistant"
@@ -11,11 +13,26 @@ import (
 	"github.com/acai-travel/tech-challenge/internal/httpx"
 	"github.com/acai-travel/tech-challenge/internal/mongox"
 	"github.com/acai-travel/tech-challenge/internal/pb"
+	"github.com/acai-travel/tech-challenge/internal/telemetry"
 	"github.com/gorilla/mux"
 	"github.com/twitchtv/twirp"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 func main() {
+	ctx := context.Background()
+
+	shutdown, err := telemetry.Init(ctx, "acai-chat-service")
+	if err != nil {
+		slog.Error("Failed to init telemetry", "error", err)
+		os.Exit(1)
+	}
+	defer func() {
+		if err := shutdown(ctx); err != nil {
+			slog.Error("Failed to shutdown telemetry", "error", err)
+		}
+	}()
+
 	mongo := mongox.MustConnect()
 
 	repo := model.New(mongo)
@@ -28,6 +45,7 @@ func main() {
 	handler.Use(
 		httpx.Logger(),
 		httpx.Recovery(),
+		otelhttp.NewMiddleware("server"),
 	)
 
 	handler.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

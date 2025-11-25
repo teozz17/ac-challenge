@@ -10,6 +10,7 @@ import (
 	"github.com/acai-travel/tech-challenge/internal/pb"
 	"github.com/twitchtv/twirp"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.opentelemetry.io/otel"
 )
 
 var _ pb.ChatService = (*Server)(nil)
@@ -59,12 +60,16 @@ func (s *Server) StartConversation(ctx context.Context, req *pb.StartConversatio
 
 	// Generate title concurrently
 	go func() {
+		ctx, span := otel.Tracer("chat-service").Start(ctx, "GenerateTitle")
+		defer span.End()
 		title, err := s.assist.Title(ctx, conversation)
 		titleChan <- result{title: title, err: err}
 	}()
 
 	// Generate reply concurrently
 	go func() {
+		ctx, span := otel.Tracer("chat-service").Start(ctx, "GenerateReply")
+		defer span.End()
 		reply, err := s.assist.Reply(ctx, conversation)
 		replyChan <- result{reply: reply, err: err}
 	}()
