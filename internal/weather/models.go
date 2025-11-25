@@ -37,7 +37,7 @@ type Current struct {
 	FeelslikeF       float64     `json:"feelslike_f"`
 	VisKm            float64     `json:"vis_km"`
 	VisMiles         float64     `json:"vis_miles"`
-	UV               int         `json:"uv"`
+	UV               float64     `json:"uv"`
 	GustMph          float64     `json:"gust_mph"`
 	GustKph          float64     `json:"gust_kph"`
 	AirQuality       *AirQuality `json:"air_quality,omitempty"`
@@ -107,16 +107,16 @@ type Day struct {
 	DailyWillItSnow   int       `json:"daily_will_it_snow"`
 	DailyChanceOfSnow int       `json:"daily_chance_of_snow"`
 	Condition         Condition `json:"condition"`
-	UV                int       `json:"uv"`
+	UV                float64   `json:"uv"`
 }
 
 type Astro struct {
-	Sunrise          string `json:"sunrise"`
-	Sunset           string `json:"sunset"`
-	Moonrise         string `json:"moonrise"`
-	Moonset          string `json:"moonset"`
-	MoonPhase        string `json:"moon_phase"`
-	MoonIllumination string `json:"moon_illumination"`
+	Sunrise          string  `json:"sunrise"`
+	Sunset           string  `json:"sunset"`
+	Moonrise         string  `json:"moonrise"`
+	Moonset          string  `json:"moonset"`
+	MoonPhase        string  `json:"moon_phase"`
+	MoonIllumination float64 `json:"moon_illumination"`
 }
 
 type Hour struct {
@@ -152,7 +152,7 @@ type Hour struct {
 	VisMiles     float64   `json:"vis_miles"`
 	GustMph      float64   `json:"gust_mph"`
 	GustKph      float64   `json:"gust_kph"`
-	UV           int       `json:"uv"`
+	UV           float64   `json:"uv"`
 }
 
 type Alerts struct {

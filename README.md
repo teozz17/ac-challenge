@@ -52,6 +52,9 @@ I instrumented the server with **OpenTelemetry**.
 
 ![Jaeger Trace List](photos/image.png)
 ![Jaeger Trace Detail](photos/image2.png)
+![Postman](photos/image3.png)
+
+I later found out that you can limit which fields the weather API returns. This would be good practice to exclude data I don't need. It would help the AI focus on common things like rain or sun instead of all the irrelevant details. I'm still keeping everything for now just in case, but ideally I should limit what information comes back from the API.
 
 ---
 Let me know if you have any questions!

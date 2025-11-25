@@ -82,7 +82,7 @@ func (a *Assistant) Reply(ctx context.Context, conv *model.Conversation) (string
 	slog.InfoContext(ctx, "Generating reply for conversation", "conversation_id", conv.ID)
 
 	msgs := []openai.ChatCompletionMessageParamUnion{
-		openai.SystemMessage("You are a helpful, concise AI assistant. Provide accurate, safe, and clear responses."),
+		openai.SystemMessage("You are a helpful, concise AI assistant. Provide accurate, safe, and clear responses. IMPORTANT: When users ask about relative dates like 'tomorrow', 'next week', etc., ALWAYS call get_today_date first to get the current date, then calculate the target date from that result. Pay close attention to the year."),
 	}
 
 	for _, m := range conv.Messages {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/acai-travel/tech-challenge/internal/weather"
@@ -42,6 +43,7 @@ func (t *WeatherTool) Execute(ctx context.Context, args json.RawMessage) (string
 
 	weatherData, err := weather.GetCurrentWeather(ctx, payload.Location)
 	if err != nil {
+		slog.Error("Failed to get weather", "error", err, "location", payload.Location)
 		return fmt.Sprintf("failed to get weather: %s", err.Error()), nil
 	}
 
@@ -111,6 +113,7 @@ func (t *ForecastTool) Execute(ctx context.Context, args json.RawMessage) (strin
 
 	forecast, err := weather.GetForecast(ctx, payload.Location, payload.Days, payload.Hour, payload.Date)
 	if err != nil {
+		slog.Error("Failed to get forecast", "error", err, "location", payload.Location)
 		return fmt.Sprintf("failed to get forecast: %s", err.Error()), nil
 	}
 

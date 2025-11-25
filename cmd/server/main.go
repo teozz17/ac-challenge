@@ -22,6 +22,10 @@ import (
 func main() {
 	ctx := context.Background()
 
+	if os.Getenv("WEATHER_API_KEY") == "" {
+		slog.Warn("WEATHER_API_KEY is not set. Weather tools will fail.")
+	}
+
 	shutdown, err := telemetry.Init(ctx, "acai-chat-service")
 	if err != nil {
 		slog.Error("Failed to init telemetry", "error", err)
