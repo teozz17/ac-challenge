@@ -21,6 +21,12 @@
     ```
     The server will start on port 8080.
 
+4.  **Run Tests**:
+    ```bash
+    go test ./...
+    ```
+    This runs all unit and integration tests. Integration tests will skip if API keys are not set.
+
 ## What I Did
 
 ### Task 1: Fix Title Generation
@@ -42,6 +48,7 @@ The tool logic in `assistant.go` was getting messy, so I refactored it out.
 I added a mix of unit and integration tests:
 - **Server Tests**: Uses a `MockAssistant` to test the API endpoints without hitting OpenAI (fast & free).
 - **Assistant Tests (Bonus)**: Added an integration test that actually hits OpenAI to verify the prompts work. It skips automatically if you don't have the API key set.
+- **Tool Tests (Bonus)**: Added unit tests for `DateTool`, `TimeInZoneTool`, `WeatherTool`, and `ForecastTool` to ensure proper error handling and validation.
 
 ### Task 5: Instrumentation (Observability)
 I instrumented the server with **OpenTelemetry**.
@@ -70,5 +77,5 @@ If I had more time, here are some enhancements I'd consider:
 - **Custom Metrics**: Track business metrics like tool usage frequency and conversation length in Prometheus
 - **Conversation Search**: Add full-text search across conversation history using MongoDB Atlas Search
 - **Alerting**: Set up alerts for error rates, latency spikes, and API quota limits
-- **Test Coverage**: Add unit tests for individual tools and load tests for performance validation. Not only the server API but also all the tools and the whole flow of tool calling.
+- **Load Tests**: Add performance validation tests to ensure the system handles high request volumes
 - **E2E Tests**: Create end-to-end tests simulating real conversations with deterministic OpenAI mocks
