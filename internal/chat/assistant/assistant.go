@@ -4,12 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/acai-travel/tech-challenge/internal/chat/model"
+	"github.com/acai-travel/tech-challenge/internal/weather"
 	ics "github.com/arran4/golang-ical"
 	"github.com/openai/openai-go/v2"
 )
@@ -147,7 +149,33 @@ func (a *Assistant) Reply(ctx context.Context, conv *model.Conversation) (string
 
 				switch call.Function.Name {
 				case "get_weather":
-					msgs = append(msgs, openai.ToolMessage("weather is fine", call.ID))
+					var weatherPayload struct {
+						Location string `json:"location"`
+					}
+					if err := json.Unmarshal([]byte(call.Function.Arguments), &weatherPayload); err != nil {
+						msgs = append(msgs, openai.ToolMessage("failed to parse location parameter", call.ID))
+						break
+					}
+
+					weatherData, err := weather.GetCurrentWeather(ctx, weatherPayload.Location)
+					if err != nil {
+						slog.ErrorContext(ctx, "Failed to get weather", "location", weatherPayload.Location, "error", err)
+						msgs = append(msgs, openai.ToolMessage(fmt.Sprintf("failed to get weather: %s", err.Error()), call.ID))
+						break
+					}
+
+					weatherMsg := fmt.Sprintf("Weather in %s, %s: %s, Temperature: %.1f°C, Feels like: %.1f°C, Wind: %.1f km/h %s, Humidity: %d%%, Cloud coverage: %d%%",
+						weatherData.Location.Name,
+						weatherData.Location.Country,
+						weatherData.Current.Condition.Text,
+						weatherData.Current.TempC,
+						weatherData.Current.FeelslikeC,
+						weatherData.Current.WindKph,
+						weatherData.Current.WindDir,
+						weatherData.Current.Humidity,
+						weatherData.Current.Cloud)
+
+					msgs = append(msgs, openai.ToolMessage(weatherMsg, call.ID))
 				case "get_today_date":
 					msgs = append(msgs, openai.ToolMessage(time.Now().Format(time.RFC3339), call.ID))
 				case "get_holidays":
