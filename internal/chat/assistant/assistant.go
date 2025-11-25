@@ -19,6 +19,8 @@ type Assistant struct {
 
 func New() *Assistant {
 	registry := tools.NewRegistry()
+	registry.Register(&tools.WeatherTool{})
+	registry.Register(&tools.ForecastTool{})
 	registry.Register(&tools.DateTool{})
 	registry.Register(&holidays.HolidaysTool{})
 	registry.Register(&tools.TimeInZoneTool{})
