@@ -47,24 +47,48 @@ func (s *Server) StartConversation(ctx context.Context, req *pb.StartConversatio
 		return nil, twirp.RequiredArgumentError("message")
 	}
 
-	// choose a title
-	title, err := s.assist.Title(ctx, conversation)
-	if err != nil {
-		slog.ErrorContext(ctx, "Failed to generate conversation title", "error", err)
-	} else {
-		conversation.Title = title
+	// Run title and reply generation in parallel for better performance
+	type result struct {
+		title string
+		reply string
+		err   error
 	}
 
-	// generate a reply
-	reply, err := s.assist.Reply(ctx, conversation)
-	if err != nil {
-		return nil, err
+	titleChan := make(chan result, 1)
+	replyChan := make(chan result, 1)
+
+	// Generate title concurrently
+	go func() {
+		title, err := s.assist.Title(ctx, conversation)
+		titleChan <- result{title: title, err: err}
+	}()
+
+	// Generate reply concurrently
+	go func() {
+		reply, err := s.assist.Reply(ctx, conversation)
+		replyChan <- result{reply: reply, err: err}
+	}()
+
+	// Wait for both operations to complete
+	titleResult := <-titleChan
+	replyResult := <-replyChan
+
+	// Handle title generation error (non-critical, use default)
+	if titleResult.err != nil {
+		slog.ErrorContext(ctx, "Failed to generate conversation title", "error", titleResult.err)
+	} else {
+		conversation.Title = titleResult.title
+	}
+
+	// Handle reply generation error (critical)
+	if replyResult.err != nil {
+		return nil, replyResult.err
 	}
 
 	conversation.Messages = append(conversation.Messages, &model.Message{
 		ID:        primitive.NewObjectID(),
 		Role:      model.RoleAssistant,
-		Content:   reply,
+		Content:   replyResult.reply,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	})
@@ -76,7 +100,7 @@ func (s *Server) StartConversation(ctx context.Context, req *pb.StartConversatio
 	return &pb.StartConversationResponse{
 		ConversationId: conversation.ID.Hex(),
 		Title:          conversation.Title,
-		Reply:          reply,
+		Reply:          replyResult.reply,
 	}, nil
 }
 
