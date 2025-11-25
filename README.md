@@ -37,6 +37,7 @@ The tool logic in `assistant.go` was getting messy, so I refactored it out.
 - Created a `internal/chat/tools` package.
 - Implemented a **Registry** pattern to manage tools easily.
 - **Bonus**: Added a `get_time_in_zone` tool. You can ask "What time is it in Tokyo?" and it works.
+
 ### Task 4: Automated Tests
 I added a mix of unit and integration tests:
 - **Server Tests**: Uses a `MockAssistant` to test the API endpoints without hitting OpenAI (fast & free).
@@ -48,6 +49,9 @@ I instrumented the server with **OpenTelemetry**.
 - **Tracing (Bonus)**: I added **Jaeger** to the docker-compose.
     - Go to `http://localhost:16686` to see the traces.
     - I added manual spans so you can see exactly how long "GenerateTitle" vs "GenerateReply" takes in the waterfall view.
+
+![Jaeger Trace List](photos/image.png)
+![Jaeger Trace Detail](photos/image2.png)
 
 ---
 Let me know if you have any questions!
