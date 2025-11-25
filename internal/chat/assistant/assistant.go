@@ -21,6 +21,7 @@ func New() *Assistant {
 	registry := tools.NewRegistry()
 	registry.Register(&tools.DateTool{})
 	registry.Register(&holidays.HolidaysTool{})
+	registry.Register(&tools.TimeInZoneTool{})
 
 	return &Assistant{
 		cli:      openai.NewClient(),
