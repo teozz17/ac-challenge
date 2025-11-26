@@ -11,6 +11,7 @@ import (
 	"github.com/acai-travel/tech-challenge/internal/chat/model"
 	"github.com/acai-travel/tech-challenge/internal/health"
 	"github.com/acai-travel/tech-challenge/internal/httpx"
+	_ "github.com/acai-travel/tech-challenge/internal/metrics"
 	"github.com/acai-travel/tech-challenge/internal/mongox"
 	"github.com/acai-travel/tech-challenge/internal/pb"
 	"github.com/acai-travel/tech-challenge/internal/telemetry"

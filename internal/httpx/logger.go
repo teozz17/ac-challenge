@@ -3,6 +3,9 @@ package httpx
 import (
 	"log/slog"
 	"net/http"
+	"time"
+
+	"github.com/acai-travel/tech-challenge/internal/metrics"
 )
 
 type statusAwareResponseWriter struct {
@@ -18,9 +21,14 @@ func (w *statusAwareResponseWriter) WriteHeader(status int) {
 func Logger() func(handler http.Handler) http.Handler {
 	return func(handler http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			saw := &statusAwareResponseWriter{ResponseWriter: w}
+			start := time.Now()
+			saw := &statusAwareResponseWriter{ResponseWriter: w, status: 200}
 
 			defer func() {
+				duration := time.Since(start)
+
+				metrics.RecordRequest(r.Method, r.URL.Path, saw.status, duration)
+
 				// Skip logging for metrics endpoint to avoid noise
 				// Clear console and all data is on Grafana
 				if r.URL.Path == "/metrics" {
