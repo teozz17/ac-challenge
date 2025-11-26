@@ -21,6 +21,12 @@ func Logger() func(handler http.Handler) http.Handler {
 			saw := &statusAwareResponseWriter{ResponseWriter: w}
 
 			defer func() {
+				// Skip logging for metrics endpoint to avoid noise
+				// Clear console and all data is on Grafana
+				if r.URL.Path == "/metrics" {
+					return
+				}
+
 				if saw.status/100 == 5 {
 					slog.ErrorContext(r.Context(), "HTTP request failed", "http_method", r.Method, "http_path", r.URL.Path, "http_status", saw.status)
 				} else {

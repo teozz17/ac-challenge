@@ -14,11 +14,16 @@ import (
 	timetools "github.com/acai-travel/tech-challenge/internal/chat/tools/time"
 	"github.com/acai-travel/tech-challenge/internal/chat/tools/weather"
 	"github.com/openai/openai-go/v2"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type Assistant struct {
 	cli      openai.Client
 	registry *tools.Registry
+	tracer   trace.Tracer
 }
 
 func New() *Assistant {
@@ -33,10 +38,14 @@ func New() *Assistant {
 	return &Assistant{
 		cli:      openai.NewClient(),
 		registry: registry,
+		tracer:   otel.Tracer("assistant"),
 	}
 }
 
 func (a *Assistant) Title(ctx context.Context, conv *model.Conversation) (string, error) {
+	ctx, span := a.tracer.Start(ctx, "Assistant.Title")
+	defer span.End()
+
 	if len(conv.Messages) == 0 {
 		return "An empty conversation", nil
 	}
@@ -80,6 +89,9 @@ func (a *Assistant) Title(ctx context.Context, conv *model.Conversation) (string
 }
 
 func (a *Assistant) Reply(ctx context.Context, conv *model.Conversation) (string, error) {
+	ctx, span := a.tracer.Start(ctx, "Assistant.Reply")
+	defer span.End()
+
 	if len(conv.Messages) == 0 {
 		return "", errors.New("conversation has no messages")
 	}
@@ -87,7 +99,6 @@ func (a *Assistant) Reply(ctx context.Context, conv *model.Conversation) (string
 	slog.InfoContext(ctx, "Generating reply for conversation", "conversation_id", conv.ID)
 
 	msgs := []openai.ChatCompletionMessageParamUnion{
-		openai.SystemMessage("You are a helpful, concise AI assistant. Provide accurate, safe, and clear responses. IMPORTANT: When users ask about relative dates like 'tomorrow', 'next week', etc., ALWAYS call get_today_date first to get the current date, then calculate the target date from that result. Pay close attention to the year."),
 		openai.SystemMessage("You are a helpful, concise AI assistant specialized in Weather, Holidays, and German Airports (ICAO codes). You can answer general questions normally, but when doing so, briefly mention that your primary expertise lies in Weather, Holidays, and German Airports. Provide accurate, safe, and clear responses. IMPORTANT: When users ask about relative dates like 'tomorrow', 'next week', etc., ALWAYS call get_today_date first to get the current date, then calculate the target date from that result. Pay close attention to the year."),
 	}
 
@@ -123,13 +134,22 @@ func (a *Assistant) Reply(ctx context.Context, conv *model.Conversation) (string
 			for _, call := range message.ToolCalls {
 				slog.InfoContext(ctx, "Tool call received", "name", call.Function.Name, "args", call.Function.Arguments)
 
-				result, err := a.registry.Execute(ctx, call.Function.Name, call.Function.Arguments)
+				// Start a span for the tool execution
+				toolCtx, toolSpan := a.tracer.Start(ctx, "Tool.Execute", trace.WithAttributes(
+					attribute.String("tool.name", call.Function.Name),
+					attribute.String("tool.args", call.Function.Arguments),
+				))
+
+				result, err := a.registry.Execute(toolCtx, call.Function.Name, call.Function.Arguments)
 				if err != nil {
 					slog.ErrorContext(ctx, "Tool execution failed", "tool", call.Function.Name, "error", err)
+					toolSpan.RecordError(err)
+					toolSpan.SetStatus(codes.Error, err.Error())
 					msgs = append(msgs, openai.ToolMessage("Error executing tool: "+err.Error(), call.ID))
 				} else {
 					msgs = append(msgs, openai.ToolMessage(result, call.ID))
 				}
+				toolSpan.End()
 			}
 
 			continue
