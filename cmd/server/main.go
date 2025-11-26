@@ -9,6 +9,7 @@ import (
 	"github.com/acai-travel/tech-challenge/internal/chat"
 	"github.com/acai-travel/tech-challenge/internal/chat/assistant"
 	"github.com/acai-travel/tech-challenge/internal/chat/model"
+	"github.com/acai-travel/tech-challenge/internal/health"
 	"github.com/acai-travel/tech-challenge/internal/httpx"
 	"github.com/acai-travel/tech-challenge/internal/mongox"
 	"github.com/acai-travel/tech-challenge/internal/pb"
@@ -61,6 +62,8 @@ func main() {
 	)
 
 	handler.PathPrefix("/twirp/").Handler(pb.NewChatServiceServer(server, twirp.WithServerJSONSkipDefaults(true)))
+
+	handler.Handle("/health", health.NewHandler(mongo))
 
 	// This is for prometheus
 	handler.Handle("/metrics", promhttp.Handler())
