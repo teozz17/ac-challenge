@@ -14,6 +14,7 @@ import (
 	"github.com/acai-travel/tech-challenge/internal/pb"
 	"github.com/acai-travel/tech-challenge/internal/telemetry"
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/twitchtv/twirp"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
@@ -61,6 +62,8 @@ func main() {
 
 	handler.PathPrefix("/twirp/").Handler(pb.NewChatServiceServer(server, twirp.WithServerJSONSkipDefaults(true)))
 
+	// This is for prometheus
+	handler.Handle("/metrics", promhttp.Handler())
 
 	fs := http.FileServer(http.Dir("cmd/server/static"))
 	handler.PathPrefix("/").Handler(fs)

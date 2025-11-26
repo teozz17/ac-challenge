@@ -3,11 +3,11 @@ package telemetry
 import (
 	"context"
 	"fmt"
-	"time"
+	"os" // Added for os.Getenv
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
-	"go.opentelemetry.io/otel/exporters/stdout/stdoutmetric"
+	"go.opentelemetry.io/otel/exporters/prometheus"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
@@ -25,27 +25,35 @@ func Init(ctx context.Context, serviceName string) (func(context.Context) error,
 		return nil, fmt.Errorf("failed to create resource: %w", err)
 	}
 
-	traceExporter, err := otlptracegrpc.New(ctx, otlptracegrpc.WithInsecure())
-	if err != nil {
-		return nil, fmt.Errorf("failed to create trace exporter: %w", err)
+	var tp *trace.TracerProvider
+
+	if os.Getenv("JAEGER_ENABLED") == "true" {
+		traceExporter, err := otlptracegrpc.New(ctx, otlptracegrpc.WithInsecure())
+		if err != nil {
+			return nil, fmt.Errorf("failed to create trace exporter: %w", err)
+		}
+
+		tp = trace.NewTracerProvider(
+			trace.WithBatcher(traceExporter),
+			trace.WithResource(res),
+		)
+	} else {
+		// In case Jaeger is disabled
+		tp = trace.NewTracerProvider(
+			trace.WithResource(res),
+		)
 	}
 
-	tp := trace.NewTracerProvider(
-		trace.WithBatcher(traceExporter),
-		trace.WithResource(res),
-	)
 	otel.SetTracerProvider(tp)
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
 
-	// Metric Exporter (Stdout) - Prints metrics to console every 10 seconds
-	// Just to see metrics in console, can be removed if wanted or en production env
-	metricExporter, err := stdoutmetric.New()
+	metricExporter, err := prometheus.New()
 	if err != nil {
-		return nil, fmt.Errorf("failed to create metric exporter: %w", err)
+		return nil, fmt.Errorf("failed to create prometheus exporter: %w", err)
 	}
 
 	mp := metric.NewMeterProvider(
-		metric.WithReader(metric.NewPeriodicReader(metricExporter, metric.WithInterval(10*time.Second))),
+		metric.WithReader(metricExporter),
 		metric.WithResource(res),
 	)
 	otel.SetMeterProvider(mp)
