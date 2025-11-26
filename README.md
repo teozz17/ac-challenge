@@ -4,7 +4,7 @@
 
 1.  **Start Infrastructure**:
     ```bash
-    docker-compose up -d
+    make up
     ```
     This spins up MongoDB, Jaeger (for tracing), Prometheus (metrics), and Grafana (dashboards).
 
@@ -23,7 +23,7 @@
 
 4.  **Run Tests**:
     ```bash
-    go test ./...
+    make test
     ```
     This runs all unit and integration tests. Integration tests will skip if API keys are not set.
 
