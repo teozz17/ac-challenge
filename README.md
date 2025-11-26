@@ -6,7 +6,7 @@
     ```bash
     docker-compose up -d
     ```
-    This spins up MongoDB and Jaeger (for tracing).
+    This spins up MongoDB, Jaeger (for tracing), Prometheus (metrics), and Grafana (dashboards).
 
 2.  **Environment Variables**:
     Make sure you have these exported in your shell:
@@ -62,6 +62,54 @@ I instrumented the server with **OpenTelemetry**.
 ![Postman](photos/image3.png)
 
 I later found out that you can limit which fields the weather API returns. This would be good practice to exclude data I don't need. It would help the AI focus on common things like rain or sun instead of all the irrelevant details. I'm still keeping everything for now just in case, but ideally I should limit what information comes back from the API.
+
+## 11/26 improvements.
+
+### 1. Folder Reorganization & Architecture Improvements
+- **Cleaner Structure**: Reorganized the codebase into a more maintainable architecture with better separation of concerns.
+
+### 2. New Tool: Airport Information
+- **`get_airport_info`**: Added a new tool to retrieve German airport information by ICAO code (e.g., EDDF for Frankfurt).
+
+### 3. Conversation TTL (Time-To-Live)
+- **Automatic Cleanup**: Implemented MongoDB TTL indexes to automatically delete conversations after 5 minutes of inactivity.
+
+### 4. Simple UI POC
+
+![UI](photos/imageChatUI.png)
+![UI](photos/imageChatUI2.png)
+
+- **User-Friendly Interface**: Basic static HTML/JavaScript chat interface.
+- **Direct Integration**: The UI connects directly to the Twirp API endpoints.
+- **Session Persistence**: Properly maintains conversation context using `conversation_id`.
+- **Accessible**: Visit `http://localhost:8080` to interact with the chatbot through a browser.
+
+### 5. Enhanced Observability Stack (Personal Touch)
+
+![Grafan](photos/grafana.png)
+
+While Task 5 originally asked for a simple metrics system, I decided to go significantly beyond that because I'm genuinely passionate about observability and systems analysis. Understanding how systems behave internally, identifying bottlenecks, and visualizing data flows is something I deeply enjoy, so I implemented a complete, production-grade observability stack:
+
+#### What I Added:
+- **Prometheus**: Full metrics collection with custom instrumentation
+  - Scrapes `/metrics` endpoint every 5 seconds
+  - Tracks request counts, latencies, and custom business metrics
+  - Access at `http://localhost:9090`
+
+- **Grafana**: Dashboards for visualization
+  - Pre-configured data sources for Prometheus and Jaeger
+  - Explore metrics and traces in a unified interface
+  - Access at `http://localhost:3000` (user:admin, password:admin)
+  - To access an specific log go to explore and select the log name.
+
+- **Jaeger + OpenTelemetry Tracing**: Distributed tracing with detailed spans
+  - Instrumented the Assistant with proper tracing (Reply, Title, Tool execution)
+  - Visual waterfall showing exact timing: OpenAI calls vs. tool execution
+  - Rich attributes on each span (tool names, arguments, errors)
+  - See the detailed trace flow at `http://localhost:16686`
+
+#### Why This Matters to Me:
+This isn’t just about checking a box—it’s something I genuinely enjoy. I like having clear visibility into what the application is doing, understanding how it behaves under different conditions, and having the data to improve it. Working with systems in this way is something I find personally rewarding.
 
 ---
 Let me know if you have any questions!
