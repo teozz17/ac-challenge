@@ -76,6 +76,10 @@ I later found out that you can limit which fields the weather API returns. This 
 
 ### 4. Simple UI POC
 
+Shows the old conversations and allows you to send messages to the chatbot of a specific conversation.
+
+Like chatgpt style
+
 ![UI](photos/imageChatUI.png)
 ![UI](photos/imageChatUI2.png)
 
@@ -97,6 +101,7 @@ While Task 5 originally asked for a simple metrics system, I decided to go signi
   - Access at `http://localhost:9090`
 
 - **Grafana**: Dashboards for visualization
+  - SOme cool looking dashboards
   - Pre-configured data sources for Prometheus and Jaeger
   - Explore metrics and traces in a unified interface
   - Access at `http://localhost:3000` (user:admin, password:admin)

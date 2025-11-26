@@ -9,7 +9,9 @@ import (
 	"github.com/acai-travel/tech-challenge/internal/chat"
 	"github.com/acai-travel/tech-challenge/internal/chat/assistant"
 	"github.com/acai-travel/tech-challenge/internal/chat/model"
+	"github.com/acai-travel/tech-challenge/internal/health"
 	"github.com/acai-travel/tech-challenge/internal/httpx"
+	_ "github.com/acai-travel/tech-challenge/internal/metrics"
 	"github.com/acai-travel/tech-challenge/internal/mongox"
 	"github.com/acai-travel/tech-challenge/internal/pb"
 	"github.com/acai-travel/tech-challenge/internal/telemetry"
@@ -45,7 +47,7 @@ func main() {
 	if err := repo.SetupTTLIndex(ctx); err != nil {
 		slog.Warn("Failed to setup TTL index", "error", err)
 	} else {
-		slog.Info("TTL index configured: conversations will be deleted after 5 minutes of inactivity")
+		slog.Info("TTL index configured: conversations will be deleted after 1 hour of inactivity (previous 5 but changed to show old conversations in UI :)")
 	}
 
 	assist := assistant.New()
@@ -61,6 +63,8 @@ func main() {
 	)
 
 	handler.PathPrefix("/twirp/").Handler(pb.NewChatServiceServer(server, twirp.WithServerJSONSkipDefaults(true)))
+
+	handler.Handle("/health", health.NewHandler(mongo))
 
 	// This is for prometheus
 	handler.Handle("/metrics", promhttp.Handler())
