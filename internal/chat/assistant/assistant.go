@@ -8,7 +8,10 @@ import (
 
 	"github.com/acai-travel/tech-challenge/internal/chat/model"
 	"github.com/acai-travel/tech-challenge/internal/chat/tools"
+	"github.com/acai-travel/tech-challenge/internal/chat/tools/date"
 	"github.com/acai-travel/tech-challenge/internal/chat/tools/holidays"
+	timetools "github.com/acai-travel/tech-challenge/internal/chat/tools/time"
+	"github.com/acai-travel/tech-challenge/internal/chat/tools/weather"
 	"github.com/openai/openai-go/v2"
 )
 
@@ -19,11 +22,11 @@ type Assistant struct {
 
 func New() *Assistant {
 	registry := tools.NewRegistry()
-	registry.Register(&tools.WeatherTool{})
-	registry.Register(&tools.ForecastTool{})
-	registry.Register(&tools.DateTool{})
+	registry.Register(&weather.WeatherTool{})
+	registry.Register(&weather.ForecastTool{})
+	registry.Register(&date.DateTool{})
 	registry.Register(&holidays.HolidaysTool{})
-	registry.Register(&tools.TimeInZoneTool{})
+	registry.Register(&timetools.TimeInZoneTool{})
 
 	return &Assistant{
 		cli:      openai.NewClient(),
