@@ -91,6 +91,8 @@ Like chatgpt style
 ### 5. Enhanced Observability Stack (Personal Touch)
 
 ![Grafan](photos/grafana.png)
+![Grafan](photos/grafanaDashboard.png)
+
 
 While Task 5 originally asked for a simple metrics system, I decided to go significantly beyond that because I'm genuinely passionate about observability and systems analysis. Understanding how systems behave internally, identifying bottlenecks, and visualizing data flows is something I deeply enjoy, so I implemented a complete, production-grade observability stack:
 
