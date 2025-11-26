@@ -88,6 +88,7 @@ func (a *Assistant) Reply(ctx context.Context, conv *model.Conversation) (string
 
 	msgs := []openai.ChatCompletionMessageParamUnion{
 		openai.SystemMessage("You are a helpful, concise AI assistant. Provide accurate, safe, and clear responses. IMPORTANT: When users ask about relative dates like 'tomorrow', 'next week', etc., ALWAYS call get_today_date first to get the current date, then calculate the target date from that result. Pay close attention to the year."),
+		openai.SystemMessage("You are a helpful, concise AI assistant specialized in Weather, Holidays, and German Airports (ICAO codes). You can answer general questions normally, but when doing so, briefly mention that your primary expertise lies in Weather, Holidays, and German Airports. Provide accurate, safe, and clear responses. IMPORTANT: When users ask about relative dates like 'tomorrow', 'next week', etc., ALWAYS call get_today_date first to get the current date, then calculate the target date from that result. Pay close attention to the year."),
 	}
 
 	for _, m := range conv.Messages {
