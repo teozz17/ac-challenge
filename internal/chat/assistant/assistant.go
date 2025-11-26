@@ -8,6 +8,7 @@ import (
 
 	"github.com/acai-travel/tech-challenge/internal/chat/model"
 	"github.com/acai-travel/tech-challenge/internal/chat/tools"
+	"github.com/acai-travel/tech-challenge/internal/chat/tools/airport"
 	"github.com/acai-travel/tech-challenge/internal/chat/tools/date"
 	"github.com/acai-travel/tech-challenge/internal/chat/tools/holidays"
 	timetools "github.com/acai-travel/tech-challenge/internal/chat/tools/time"
@@ -27,6 +28,7 @@ func New() *Assistant {
 	registry.Register(&date.DateTool{})
 	registry.Register(&holidays.HolidaysTool{})
 	registry.Register(&timetools.TimeInZoneTool{})
+	registry.Register(&airport.AirportTool{})
 
 	return &Assistant{
 		cli:      openai.NewClient(),
