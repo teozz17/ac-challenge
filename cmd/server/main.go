@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -60,11 +59,11 @@ func main() {
 		otelhttp.NewMiddleware("server"),
 	)
 
-	handler.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		_, _ = fmt.Fprint(w, "Hi, my name is Clippy!")
-	})
-
 	handler.PathPrefix("/twirp/").Handler(pb.NewChatServiceServer(server, twirp.WithServerJSONSkipDefaults(true)))
+
+
+	fs := http.FileServer(http.Dir("cmd/server/static"))
+	handler.PathPrefix("/").Handler(fs)
 
 	// Start the server
 	slog.Info("Starting the server...")
