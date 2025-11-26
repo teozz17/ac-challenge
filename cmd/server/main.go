@@ -46,7 +46,7 @@ func main() {
 	if err := repo.SetupTTLIndex(ctx); err != nil {
 		slog.Warn("Failed to setup TTL index", "error", err)
 	} else {
-		slog.Info("TTL index configured: conversations will be deleted after 5 minutes of inactivity")
+		slog.Info("TTL index configured: conversations will be deleted after 1 hour of inactivity (previous 5 but changed to show old conversations in UI :)")
 	}
 
 	assist := assistant.New()

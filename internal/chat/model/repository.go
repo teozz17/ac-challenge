@@ -26,14 +26,14 @@ func New(conn *mongo.Database) *Repository {
 }
 
 // SetupTTLIndex creates a TTL index on the updated_at field to automatically
-// delete conversations that haven't been updated in 5 minutes.
+// delete conversations that haven't been updated in 1 hour.
 func (r *Repository) SetupTTLIndex(ctx context.Context) error {
 	collection := r.conn.Collection(conversationCollection)
 
 	indexModel := mongo.IndexModel{
 		Keys: bson.D{{Key: "updated_at", Value: 1}},
 		Options: options.Index().
-			SetExpireAfterSeconds(300),
+			SetExpireAfterSeconds(3600),
 	}
 
 	_, err := collection.Indexes().CreateOne(ctx, indexModel)
