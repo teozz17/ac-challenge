@@ -40,6 +40,14 @@ func main() {
 	mongo := mongox.MustConnect()
 
 	repo := model.New(mongo)
+
+	// Setup TTL for conversations
+	if err := repo.SetupTTLIndex(ctx); err != nil {
+		slog.Warn("Failed to setup TTL index", "error", err)
+	} else {
+		slog.Info("TTL index configured: conversations will be deleted after 5 minutes of inactivity")
+	}
+
 	assist := assistant.New()
 
 	server := chat.NewServer(repo, assist)
