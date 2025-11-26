@@ -17,7 +17,7 @@ func (t *AirportTool) Name() string {
 }
 
 func (t *AirportTool) Description() string {
-	return "Get airport information by ICAO code (4-letter airport code). NOTE: This API works best for German airports (e.g., EDDF for Frankfurt, EDDM for Munich, EDDB for Berlin). If an airport is not found, suggest trying a German airport code instead."
+	return "Get airport information by ICAO code (4-letter airport code). IMPORTANT: This tool PRIMARILY supports GERMAN airports (e.g., EDDF, EDDM, EDDB). If you cannot find an airport (like LEBL or KJFK), you MUST apologize and explicitly inform the user that you have better data for German airports, suggesting they try a code like EDDF (Frankfurt) or EDDM (Munich)."
 }
 
 func (t *AirportTool) Parameters() openai.FunctionParameters {
