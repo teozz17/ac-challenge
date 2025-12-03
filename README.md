@@ -119,6 +119,54 @@ While Task 5 originally asked for a simple metrics system, I decided to go signi
 This isn’t just about checking a box—it’s something I genuinely enjoy. I like having clear visibility into what the application is doing, understanding how it behaves under different conditions, and having the data to improve it. Working with systems in this way is something I find personally rewarding.
 
 ---
+
+## 12/03 improvements.
+
+### 6. Agent Architecture
+
+#### How It Works
+
+The agent uses a `shouldContinue()` function that decides when to stop based on three conditions:
+
+```go
+func (a *Assistant) shouldContinue(ctx context.Context, response *openai.ChatCompletion, iteration int) (bool, string) {
+    // 1. Natural completion: No tool calls = final answer ready
+    if len(response.Choices[0].Message.ToolCalls) == 0 {
+        return false, response.Choices[0].Message.Content
+    }
+    
+    // 2. Safety limit: Prevent infinite loops
+    if iteration >= 15 {
+        return false, "Max iterations reached..."
+    }
+    
+    // 3. Continue: Execute tools and loop
+    return true, ""
+}
+```
+
+**Main Loop:**
+```go
+for {
+    response := callGPT4(ctx, msgs, toolDefs)
+    
+    shouldContinue, finalAnswer := a.shouldContinue(ctx, response, iteration)
+    if !shouldContinue {
+        return finalAnswer, nil
+    }
+    
+    msgs = a.executeTools(ctx, msgs, response)
+    iteration++
+}
+```
+
+#### Benefits
+
+- **Intelligent**: Stops when GPT-4 signals it's done, not after arbitrary iterations
+- **Safe**: Hard limit prevents runaway costs
+- **Observable**: Logs why the agent stopped (completion vs. limit)
+- **Maintainable**: Easy to add new termination conditions (loop detection, cost limits, etc.)
+
 Let me know if you have any questions!
 
 ## Potential Improvements
